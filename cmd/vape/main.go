@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path"
 
 	"github.com/blevesearch/bleve"
 	"github.com/docopt/docopt-go"
+	_ "github.com/awans/vape/kvape"
+
 )
 
 const usage = `vape
@@ -16,6 +19,7 @@ const usage = `vape
 Usage:
   vape index <json_file>
 	vape search <query>
+	vape clean
 	vape forever`
 
 const indexDir = "index"
@@ -27,7 +31,7 @@ func createOrGetIndex(id string) (bleve.Index, error) {
 		return index, nil
 	}
 	mapping := bleve.NewIndexMapping()
-	index, err = bleve.New(p, mapping)
+	index, err = bleve.NewUsing(p, mapping, "upside_down", "kvape", make(map[string]interface{}))
 	if err != nil {
 		return nil, err
 	}
@@ -85,5 +89,15 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Println(hits)
+	}
+	if args["clean"].(bool) {
+		for _, providerID := range providerIDs {
+			p := path.Join(indexDir, providerID)
+			err := os.RemoveAll(p)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
 	}
 }
