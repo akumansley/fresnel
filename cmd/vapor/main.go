@@ -8,19 +8,17 @@ import (
 	"os"
 	"path"
 
+	_ "github.com/awans/vapor/encryptedkv"
 	"github.com/blevesearch/bleve"
 	"github.com/docopt/docopt-go"
-	_ "github.com/awans/vape/kvape"
-
 )
 
 const usage = `vape
 
 Usage:
-  vape index <json_file>
-	vape search <query>
-	vape clean
-	vape forever`
+  vapor index <json_file>
+	vapor search <query>
+	vapor clean`
 
 const indexDir = "index"
 
@@ -31,7 +29,7 @@ func createOrGetIndex(id string) (bleve.Index, error) {
 		return index, nil
 	}
 	mapping := bleve.NewIndexMapping()
-	index, err = bleve.NewUsing(p, mapping, "upside_down", "kvape", make(map[string]interface{}))
+	index, err = bleve.NewUsing(p, mapping, "upside_down", "encryptedkv", make(map[string]interface{}))
 	if err != nil {
 		return nil, err
 	}

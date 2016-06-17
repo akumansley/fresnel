@@ -10,7 +10,7 @@
 //  express or implied. See the License for the specific language
 //  governing permissions and limitations under the License.
 
-package kvape
+package encryptedkv
 
 import (
 	"testing"
@@ -34,55 +34,55 @@ func cleanup(t *testing.T, s store.KVStore) {
 	}
 }
 
-func TestKvapeKVCrud(t *testing.T) {
+func TestEncryptedKVKVCrud(t *testing.T) {
 	s := open(t, nil)
 	defer cleanup(t, s)
 	test.CommonTestKVCrud(t, s)
 }
 
-func TestKVapeReaderIsolation(t *testing.T) {
+func TestEncryptedKVReaderIsolation(t *testing.T) {
 	s := open(t, nil)
 	defer cleanup(t, s)
 	test.CommonTestReaderIsolation(t, s)
 }
 
-func TestKVapeReaderOwnsGetBytes(t *testing.T) {
+func TestEncryptedKVReaderOwnsGetBytes(t *testing.T) {
 	s := open(t, nil)
 	defer cleanup(t, s)
 	test.CommonTestReaderOwnsGetBytes(t, s)
 }
 
-func TestKVapeWriterOwnsBytes(t *testing.T) {
+func TestEncryptedKVWriterOwnsBytes(t *testing.T) {
 	s := open(t, nil)
 	defer cleanup(t, s)
 	test.CommonTestWriterOwnsBytes(t, s)
 }
 
-func TestKVapePrefixIterator(t *testing.T) {
+func TestEncryptedKVPrefixIterator(t *testing.T) {
 	s := open(t, nil)
 	defer cleanup(t, s)
 	test.CommonTestPrefixIterator(t, s)
 }
 
-func TestKVapePrefixIteratorSeek(t *testing.T) {
+func TestEncryptedKVPrefixIteratorSeek(t *testing.T) {
 	s := open(t, nil)
 	defer cleanup(t, s)
 	test.CommonTestPrefixIteratorSeek(t, s)
 }
 
-func TestKVapeRangeIterator(t *testing.T) {
+func TestEncryptedKVRangeIterator(t *testing.T) {
 	s := open(t, nil)
 	defer cleanup(t, s)
 	test.CommonTestRangeIterator(t, s)
 }
 
-func TestKVapeRangeIteratorSeek(t *testing.T) {
+func TestEncryptedKVRangeIteratorSeek(t *testing.T) {
 	s := open(t, nil)
 	defer cleanup(t, s)
 	test.CommonTestRangeIteratorSeek(t, s)
 }
 
-func TestKVapeMerge(t *testing.T) {
+func TestEncryptedKVMerge(t *testing.T) {
 	s := open(t, &test.TestMergeCounter{})
 	defer cleanup(t, s)
 	test.CommonTestMerge(t, s)
