@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/blevesearch/bleve/index/store"
-	gtreapBleve "github.com/blevesearch/bleve/index/store/gtreap"
 	"github.com/blevesearch/bleve/registry"
 	"github.com/steveyen/gtreap"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -23,35 +22,37 @@ type Store struct {
 	writeLock sync.Mutex
 	db        *leveldb.DB
 	key       [32]byte
-	seq       int
+	seq       uint64
 }
 
 // Item represents a kv pair
 type Item struct {
-	k []byte
-	v []byte
+	K []byte
+	V []byte
 }
 
 func itemCompare(a, b interface{}) int {
-	return bytes.Compare(a.(*Item).k, b.(*Item).k)
+	return bytes.Compare(a.(*Item).K, b.(*Item).K)
 }
 
 // New returns a new encryptedkv KV
 func New(mo store.MergeOperator, config map[string]interface{}) (store.KVStore, error) {
 	treap := gtreap.NewTreap(itemCompare)
 
-	key, ok := config["key"].([32]byte)
+	in, ok := config["key"].([]byte)
 	if !ok {
 		return nil, fmt.Errorf("must provide [32]byte key")
 	}
+
+	key := new([32]byte)
+	copy(key[:], in[:32])
 
 	path, ok := config["path"].(string)
 	if !ok {
 		return nil, fmt.Errorf("must specify path")
 	}
-	opts := opts.Options{} // TODO what to do what to do
 
-	db, err := leveldb.OpenFile(path, opts)
+	db, err := leveldb.OpenFile(path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func New(mo store.MergeOperator, config map[string]interface{}) (store.KVStore, 
 		mo:        mo,
 		writeLock: sync.Mutex{},
 		db:        db,
-		key:       key,
+		key:       *key,
 	}
 
 	err = rv.loadFromFile()
@@ -82,14 +83,14 @@ func (s *Store) Close() error {
 // Reader returns a KV reader
 func (s *Store) Reader() (store.KVReader, error) {
 	s.readLock.RLock()
-	rv := gtreapBleve.Reader{t: s.treap}
+	rv := Reader{t: s.treap}
 	s.readLock.RUnlock()
-	return rv
+	return &rv, nil
 }
 
 // Writer returns a KV writer
 func (s *Store) Writer() (store.KVWriter, error) {
-	return &Writer{s}
+	return &Writer{s}, nil
 }
 
 // Compact compacts the underlying store

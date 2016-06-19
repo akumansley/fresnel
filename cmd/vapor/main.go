@@ -13,7 +13,7 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
-const usage = `vape
+const usage = `vapor
 
 Usage:
   vapor index <json_file>
@@ -21,15 +21,19 @@ Usage:
 	vapor clean`
 
 const indexDir = "index"
+var pad = []byte("lorem ipsum dolor sit aaodijawoidjawdijaowdijaowidjmet blah blah blah blah")
+const keySize = 32
+var config = map[string]interface{}{"key": pad}
 
 func createOrGetIndex(id string) (bleve.Index, error) {
 	p := path.Join(indexDir, id)
-	index, err := bleve.Open(p)
+	index, err := bleve.OpenUsing(p, config)
 	if err == nil {
 		return index, nil
 	}
 	mapping := bleve.NewIndexMapping()
-	index, err = bleve.NewUsing(p, mapping, "upside_down", "encryptedkv", make(map[string]interface{}))
+
+	index, err = bleve.NewUsing(p, mapping, "upside_down", "encryptedkv", config)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +78,7 @@ func main() {
 		mergedIndex := bleve.NewIndexAlias()
 		for _, providerID := range providerIDs {
 			p := path.Join(indexDir, providerID)
-			index, err := bleve.Open(p)
+			index, err := bleve.OpenUsing(p, config)
 			if err != nil {
 				log.Fatal(err)
 			}

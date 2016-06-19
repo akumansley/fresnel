@@ -37,25 +37,25 @@ func (w *Writer) ExecuteBatch(batch store.KVBatch) error {
 	for k, mergeOps := range emulatedBatch.Merger.Merges {
 		kb := []byte(k)
 		var existingVal []byte
-		existingItem := t.Get(&Item{k: kb})
+		existingItem := t.Get(&Item{K: kb})
 		if existingItem != nil {
-			existingVal = t.Get(&Item{k: kb}).(*Item).v  // why is this necessary
+			existingVal = t.Get(&Item{K: kb}).(*Item).V  // why is this necessary
 		}
 		mergedVal, fullMergeOk := w.s.mo.FullMerge(kb, existingVal, mergeOps)
 		if !fullMergeOk {
 			return fmt.Errorf("merge operator returned failure")
 		}
-		append(items, &Item{k: kb, v: mergedVal})
-		t = t.Upsert(&Item{k: kb, v: mergedVal}, rand.Int())
+		items = append(items, Item{K: kb, V: mergedVal})
+		t = t.Upsert(&Item{K: kb, V: mergedVal}, rand.Int())
 	}
 
 	for _, op := range emulatedBatch.Ops {
 		if op.V != nil {
-			append(items, &Item{k: op.K, v: op.V})
-			t = t.Upsert(&Item{k: op.K, v: op.V}, rand.Int())
+			items = append(items, Item{K: op.K, V: op.V})
+			t = t.Upsert(&Item{K: op.K, V: op.V}, rand.Int())
 		} else {
-			append(items, &Item{k: op.K, v: nil})
-			t = t.Delete(&Item{k: op.K})
+			items = append(items, Item{K: op.K, V: nil})
+			t = t.Delete(&Item{K: op.K})
 		}
 	}
 
