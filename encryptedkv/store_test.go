@@ -13,6 +13,7 @@
 package encryptedkv
 
 import (
+	"os"
 	"testing"
 
 	"github.com/blevesearch/bleve/index/store"
@@ -20,7 +21,9 @@ import (
 )
 
 func open(t *testing.T, mo store.MergeOperator) store.KVStore {
-	rv, err := New(mo, nil)
+	config := map[string]interface{}{"key": []byte("testtesttesttesttesttesttesttesttest"),
+		"path": "test"}
+	rv, err := New(mo, config)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,6 +32,10 @@ func open(t *testing.T, mo store.MergeOperator) store.KVStore {
 
 func cleanup(t *testing.T, s store.KVStore) {
 	err := s.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = os.RemoveAll("test")
 	if err != nil {
 		t.Fatal(err)
 	}
