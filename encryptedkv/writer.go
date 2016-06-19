@@ -60,7 +60,9 @@ func (w *Writer) ExecuteBatch(batch store.KVBatch) error {
 	}
 
 	writeBatchToFile(w.s, items)
+	w.s.readLock.Lock()
 	w.s.treap = t
+	w.s.readLock.Unlock()
 	w.s.writeLock.Unlock()
 
 	return nil
