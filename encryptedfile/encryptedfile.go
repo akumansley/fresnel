@@ -11,7 +11,6 @@ import (
 )
 
 const pgSize = 4096
-const pgCacheMaxSize = 2 << 18 // about 1GB ??
 const nonceSize = 24
 const dataPgSize = pgSize - secretbox.Overhead - nonceSize
 
@@ -23,9 +22,9 @@ type page struct {
 // EncryptedFile wraps access to an os.File in transparent secretbox encryption
 // Satisfies the gkvlite StoreFile interface
 type EncryptedFile struct {
-	key     [32]byte
-	file    *os.File
-	pgCache map[int64]page
+	key  [32]byte
+	file *os.File
+	m    sync.RWMutex
 }
 
 // Open returns an encrypted file
@@ -34,11 +33,13 @@ func Open(name string, key [32]byte) (*EncryptedFile, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &EncryptedFile{key: key, file: file, pgCache: make(map[int64]page)}, nil
+	return &EncryptedFile{key: key, file: file}, nil
 }
 
 // Close closes an encrypted file
 func (f *EncryptedFile) Close() error {
+	f.m.Lock()
+	defer f.m.Unlock()
 	return f.file.Close()
 }
 
@@ -88,8 +89,6 @@ func (f *EncryptedFile) loadPages(start int64, end int64) ([]page, error) {
 			return nil, fmt.Errorf("Decryption failed")
 		}
 		pg.Data = data
-		f.pgCache[pgID] = pg
-
 		pages = append(pages, pg)
 	}
 	return pages, nil
@@ -97,6 +96,8 @@ func (f *EncryptedFile) loadPages(start int64, end int64) ([]page, error) {
 
 // ReadAt implements ReaderAt
 func (f *EncryptedFile) ReadAt(p []byte, off int64) (n int, err error) {
+	f.m.RLock()
+	defer f.m.RUnlock()
 	n = 0
 	startPgNum := off / dataPgSize
 	startPgOffset := off % dataPgSize
@@ -131,6 +132,8 @@ func (f *EncryptedFile) ReadAt(p []byte, off int64) (n int, err error) {
 
 // WriteAt implements WriterAt
 func (f *EncryptedFile) WriteAt(p []byte, off int64) (n int, err error) {
+	f.m.Lock()
+	defer f.m.Unlock()
 	n = 0
 	startPgNum := off / dataPgSize
 	startPgOffset := off % dataPgSize
@@ -164,6 +167,8 @@ func (f *EncryptedFile) WriteAt(p []byte, off int64) (n int, err error) {
 
 // Truncate implements StoreFile
 func (f *EncryptedFile) Truncate(size int64) error {
+	f.m.Lock()
+	defer f.m.Unlock()
 	r := size % pgSize
 	var numPg int64
 	if r == 0 {
@@ -214,6 +219,8 @@ func (e FileInfo) Sys() interface{} {
 
 // Stat implements StoreFile
 func (f *EncryptedFile) Stat() (os.FileInfo, error) {
+	f.m.RLock()
+	defer f.m.RUnlock()
 	fileInfo, err := f.file.Stat()
 	return FileInfo{fi: fileInfo}, err
 }
