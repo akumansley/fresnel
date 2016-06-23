@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"golang.org/x/crypto/nacl/secretbox"
 )
@@ -159,4 +160,60 @@ func (f *EncryptedFile) WriteAt(p []byte, off int64) (n int, err error) {
 		}
 	}
 	return n, f.writePages(pages)
+}
+
+// Truncate implements StoreFile
+func (f *EncryptedFile) Truncate(size int64) error {
+	r := size % pgSize
+	var numPg int64
+	if r == 0 {
+		numPg = size / pgSize
+	} else {
+		numPg = (size / pgSize) + 1
+	}
+	return f.file.Truncate(numPg * pgSize)
+}
+
+// FileInfo implements os.FileInfo
+type FileInfo struct {
+	fi os.FileInfo
+}
+
+// Name implements FileInfo
+func (e FileInfo) Name() string {
+	return e.fi.Name()
+}
+
+// Size implements FileInfo
+func (e FileInfo) Size() int64 {
+	encryptedSize := e.fi.Size()
+	numPg := encryptedSize / pgSize
+	return dataPgSize * numPg
+}
+
+// Mode implements FileInfo
+func (e FileInfo) Mode() os.FileMode {
+	return e.fi.Mode()
+}
+
+// ModTime implements FileInfo
+func (e FileInfo) ModTime() time.Time {
+	return e.fi.ModTime()
+}
+
+// IsDir implements FileInfo
+func (e FileInfo) IsDir() bool {
+	return e.fi.IsDir()
+
+}
+
+// Sys implements FileInfo
+func (e FileInfo) Sys() interface{} {
+	return nil
+}
+
+// Stat implements StoreFile
+func (f *EncryptedFile) Stat() (os.FileInfo, error) {
+	fileInfo, err := f.file.Stat()
+	return FileInfo{fi: fileInfo}, err
 }
