@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 	"time"
 
 	"golang.org/x/crypto/nacl/secretbox"
@@ -41,6 +42,13 @@ func (f *EncryptedFile) Close() error {
 	f.m.Lock()
 	defer f.m.Unlock()
 	return f.file.Close()
+}
+
+// Sync implements os.File
+func (f *EncryptedFile) Sync() error {
+	f.m.Lock()
+	defer f.m.Unlock()
+	return f.file.Sync()
 }
 
 func (f *EncryptedFile) writePages(pages []page) error {
