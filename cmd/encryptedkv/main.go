@@ -13,12 +13,12 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
-const usage = `vapor
+const usage = `encryptedkv
 
 Usage:
-  vapor index <json_file>
-	vapor search <query>
-	vapor clean`
+  encryptedkv index <json_file>
+	encryptedkv search <query>
+	encryptedkv clean`
 
 const indexDir = "index"
 var pad = []byte("lorem ipsum dolor sit aaodijawoidjawdijaowdijaowidjmet blah blah blah blah")
