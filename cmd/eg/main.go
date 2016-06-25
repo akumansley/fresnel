@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/awans/vapor/encryptedfile"
+	"github.com/awans/fresnel/encryptedfile"
 	"github.com/docopt/docopt-go"
 	"github.com/steveyen/gkvlite"
 )

@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	_ "github.com/awans/vapor/encryptedkv"
+	_ "github.com/awans/fresnel/encryptedkv"
 	"github.com/blevesearch/bleve"
 	"github.com/docopt/docopt-go"
 )

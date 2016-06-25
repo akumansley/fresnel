@@ -3,7 +3,7 @@ package ekv
 import (
 	"fmt"
 
-	"github.com/awans/vapor/encryptedfile"
+	"github.com/awans/fresnel/encryptedfile"
 	"github.com/blevesearch/bleve/index/store"
 	"github.com/blevesearch/bleve/registry"
 	"github.com/steveyen/gkvlite"

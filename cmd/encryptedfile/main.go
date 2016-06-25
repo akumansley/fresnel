@@ -7,7 +7,7 @@ import (
 	"log"
   "bytes"
 
-	"github.com/awans/vapor/encryptedfile"
+	"github.com/awans/fresnel/encryptedfile"
 	"github.com/docopt/docopt-go"
 )
 
